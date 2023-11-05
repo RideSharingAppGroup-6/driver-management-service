@@ -16,6 +16,6 @@ public class Driver extends BaseModel{
     private Vehicle vehicle;
     @Enumerated(EnumType.STRING)
     private DriverStatus status;
-    @ElementCollection
-    private List<Long> rides= new ArrayList<>();
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<Long> rideIds= new ArrayList<>();
 }

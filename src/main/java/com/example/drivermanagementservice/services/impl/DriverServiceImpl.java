@@ -1,6 +1,7 @@
 package com.example.drivermanagementservice.services.impl;
 
 import com.example.drivermanagementservice.constants.UrlConstants;
+import com.example.drivermanagementservice.dtos.EarningsDto;
 import com.example.drivermanagementservice.dtos.RegisterUserDto;
 import com.example.drivermanagementservice.exceptions.DriverNotAvailableException;
 import com.example.drivermanagementservice.exceptions.ResourceNotFoundException;
@@ -30,6 +31,12 @@ public class DriverServiceImpl implements DriverService {
         this.driverRepository = driverRepository;
         this.vehicleRepository = vehicleRepository;
         this.restTemplateBuilder = restTemplateBuilder;
+    }
+
+    @Override
+    public List<Driver> getAllDrivers() {
+        List<Driver> drivers = driverRepository.findAll();
+        return drivers;
     }
 
     @Override
@@ -75,7 +82,17 @@ public class DriverServiceImpl implements DriverService {
         Random random = new Random();
         int driverIndex = random.nextInt(drivers.size());
         Driver driver = drivers.get(driverIndex);
-        driver.getRides().add(rideId);
+        driver.getRideIds().add(rideId);
         return driverRepository.save(driver).getId();
+    }
+
+    @Override
+    public List<EarningsDto> getDriverEarnings(Long driverId) {
+        RestTemplate restTemplate = restTemplateBuilder.build();
+        Driver driver = driverRepository.findById(driverId).orElseThrow(() ->new ResourceNotFoundException("Driver not found"));
+        List<Long> rideIds = driver.getRideIds();
+        ResponseEntity<EarningsDto[]> response = restTemplate.postForEntity(UrlConstants.RIDES_URL, new HttpEntity<>(rideIds), EarningsDto[].class);
+        EarningsDto[] earningsDtos = response.getBody();
+        return List.of(earningsDtos);
     }
 }
